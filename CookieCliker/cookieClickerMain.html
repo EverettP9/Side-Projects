@@ -1,0 +1,59 @@
+
+<!--
+Welcome to my Cookie Clicker Copycat. This is my first coding side project where I'm using HTML, CSS, and JavaScript for the first time.
+I started this project originally just for my computer, but depending on how far I get I will adapt the code to be more versitile and standardized
+
+Current Features:
+- A clickable big cookie that has some "Jiggle" physics when clicked and hovered Over
+- An accurate Cookies per click and Cookies per Second counter that updates accordingly 
+- 7 unlockable buildings
+- 3 upgrades per building based on the number of each building owned (15,25,50)
+- The spawning of golden cookies randomly on the screen
+
+Features to add:
+- Condese/seperate work into more readable files
+- Fix the jiggle physics when clicking multiple times fast
+- Work on how large numbers are displayed
+- implement golden cookie effects
+- implement different sounds
+- implement the selling mechanic
+- fix elements so the cursor becomes a pointer when hovering over
+- Do something with the middle column
+- Make things more efficient
+- Clean up code
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<link rel = "stylesheet" href = "cookieClickerCSS.css" />
+<script src = "cookieClickerScript.js" async></script>
+</head>
+<body onload = "jiggle(); startGame();" lang = "en">
+    <div id = "goldenCookie" class = "goldenCookie" onclick = "goldenCookieEffect()"></div>
+    <div id = "Left" class = "column">
+        <div id = "farmName" class = "farmname"><span>Everett's Cookie Farm</span></div>
+        <div id = "cookiecounter" class = "cookieCounter"></div>
+        <div id = "cps" class = "cpsCounter"></div>
+     <div id = "cookie" class = "circle" onmouseenter="jiggle()" onmouseleave="resetCookie()"  onclick = "countClick();downClick()"></div>
+    </div>
+    <div id = "Center" class = "column">
+        Center
+    </div>
+    <div id = "Right" class = "column">
+        <div id = "storeHeader" class = "storeHeader">Store</div>
+        <div id = "store" class = "store" onmouseenter="document.getElementById('store').style.height = 'auto'" onmouseleave="document.getElementById('store').style.height = '55px'"></div>
+        <div id = "Cursorbox" class = "box" style = "opacity: .6;">
+            <div id = "Cursor" class = "buybox" onclick="buyBuilding(Cursor, CursorUpgrades)" style = "font-size: 40px;"><span>Cursor</span><div class = "buyNumber" id = "CursorNum"></div></div>
+            <div id = "CursorPrice" style = "font-size: 30px;"></div>
+        </div>
+        <div id = "Grandmabox" class = "box" style = "opacity: .6;">
+            <div id = "Grandma" class = "buybox" style = "font-size: 40px;" onclick="buyBuilding(Grandma, GrandmaUpgrades)">
+                <span id = "GrandmaName">???</span>
+                <div class = "buyNumber" id = "GrandmaNum"></div>
+            </div>
+            <div id = "GrandmaPrice" style = "font-size: 30px;"></div>
+        </div>
+</div>
+</body>
+</html>
