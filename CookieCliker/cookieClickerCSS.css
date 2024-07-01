@@ -141,3 +141,29 @@ body {
     display: table;
     clear: both;
 }
+
+.alertbox {
+    display: none;
+    left: 33%;
+    top: 30%;
+    border-radius: 15px;
+    background-color: rgb(222, 152, 23);
+    opacity: 1;
+    border-color:rgb(0, 0, 0);
+    width: 33%;
+    height: 100px;
+    font-size: 30px;
+    position: absolute;
+    text-align: center;
+}
+
+.toggleBuy {
+    height: 40px;
+    width: 80px;
+    background-color: darkgoldenrod;
+    font-size: 20px;
+}
+
+.buyModeBox {
+    background-color: darkgoldenrod;
+}
