@@ -11,7 +11,6 @@ Current Features:
 - The spawning of golden cookies randomly on the screen
 
 Features to add:
-- Condese/seperate work into more readable files
 - Fix the jiggle physics when clicking multiple times fast
 - Work on how large numbers are displayed
 - implement golden cookie effects
@@ -30,6 +29,7 @@ Features to add:
 <script src = "cookieClickerScript.js" async></script>
 </head>
 <body onload = "jiggle(); startGame();" lang = "en">
+    <div id = "goldenPopup" class = "alertbox"></div>
     <div id = "goldenCookie" class = "goldenCookie" onclick = "goldenCookieEffect()"></div>
     <div id = "Left" class = "column">
         <div id = "farmName" class = "farmname"><span>Everett's Cookie Farm</span></div>
@@ -43,12 +43,14 @@ Features to add:
     <div id = "Right" class = "column">
         <div id = "storeHeader" class = "storeHeader">Store</div>
         <div id = "store" class = "store" onmouseenter="document.getElementById('store').style.height = 'auto'" onmouseleave="document.getElementById('store').style.height = '55px'"></div>
+        <div class = "buyModeBox"><span id = "buyToggle" class = "toggleBuy" onclick = "buyingMode = true; document.getElementById('sellToggle').style.opacity = .5; document.getElementById('buyToggle').style.opacity = 1">Buy</span> 
+            <span id = "sellToggle" class = "toggleBuy" style = "opacity: .5;" onclick = "buyingMode = false; document.getElementById('sellToggle').style.opacity = 1; document.getElementById('buyToggle').style.opacity = .5">Sell</span></div>
         <div id = "Cursorbox" class = "box" style = "opacity: .6;">
-            <div id = "Cursor" class = "buybox" onclick="buyBuilding(Cursor, CursorUpgrades)" style = "font-size: 40px;"><span>Cursor</span><div class = "buyNumber" id = "CursorNum"></div></div>
+            <div id = "Cursor" class = "buybox" onclick="buyBuilding(Cursor, CursorUpgrades, buyingMode)" style = "font-size: 40px;"><span>Cursor</span><div class = "buyNumber" id = "CursorNum"></div></div>
             <div id = "CursorPrice" style = "font-size: 30px;"></div>
         </div>
         <div id = "Grandmabox" class = "box" style = "opacity: .6;">
-            <div id = "Grandma" class = "buybox" style = "font-size: 40px;" onclick="buyBuilding(Grandma, GrandmaUpgrades)">
+            <div id = "Grandma" class = "buybox" style = "font-size: 40px;" onclick="buyBuilding(Grandma, GrandmaUpgrades, buyingMode)">
                 <span id = "GrandmaName">???</span>
                 <div class = "buyNumber" id = "GrandmaNum"></div>
             </div>
