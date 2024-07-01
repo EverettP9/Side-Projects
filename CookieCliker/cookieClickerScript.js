@@ -6,7 +6,6 @@ The buyableObject class is for the buildings in the store
 class buyableObject {
     constructor(name, price, cps) {
         this.name = name;
-        this.number = 0;
         this.price = price;
         this.cps = cps;
         if(name == "Cursor") {
@@ -24,14 +23,34 @@ class buyableObject {
             cookiesPerSecond *= 10;
             cookiesPerSecond = Math.round(cookiesPerSecond);
             cookiesPerSecond /= 10;
-            this.number += 1;    
+            buildingNameArray[this.name] += 1;    
             this.price = Math.round(this.price * 1.15);
             document.getElementById(this.name + "Price").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(this.price) + " cookies";
             document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(cookiesPerSecond) + " cookies per second";
-            document.getElementById(this.name + "Num").innerHTML = "" + this.number;
+            document.getElementById(this.name + "Num").innerHTML = "" + buildingNameArray[this.name];
             document.getElementById(this.name + "box").style.opacity = 1;
-            boughtStatus(this.name) = true;
+            boughtStatus[this.name] = true;
 
+        }
+    }
+
+    sell() {
+        if(buildingNameArray[this.name] >=1) {
+            numOfCookies += Math.round(this.price / 1.15);
+            cookiesPerSecond -= this.cps;
+            cookiesPerSecond *= 1000;
+            cookiesPerSecond = Math.round(cookiesPerSecond);
+            cookiesPerSecond /= 1000;
+            buildingNameArray[this.name] -= 1;
+            this.price = Math.round(this.price / 1.15);
+            document.getElementById(this.name + "Price").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(this.price) + " cookies";
+            document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(cookiesPerSecond) + " cookies per second";
+            document.getElementById(this.name + "Num").innerHTML = "" + buildingNameArray[this.name];
+            if (buildingNameArray[this.name] == 0) {
+                document.getElementById(this.name + "box").style.opacity = .6;  
+                boughtStatus[this.name] = false;
+                document.getElementById(this.name + "Num").innerHTML = "";
+            }
         }
     }
     getPrice(){
@@ -42,9 +61,6 @@ class buyableObject {
     }
     getName() {
         return this.name;
-    }
-    getNumber() {
-        return this.number;
     }
     setCps(newCps) {
         this.cps = newCps;
@@ -121,17 +137,19 @@ const upgradeS03 = new upgrades(Shipment, "Even more New Trade Routes", "You fin
 
 
 const buildingArray = [Cursor, Grandma, Farm, Mine, Factory, Bank, Temple, WizardTower, Shipment];
-const buildingNameArray = ["Cursor", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "WizardTower", "Shipment"];
+const buildingNameArray = {"Cursor":0, "Grandma":0, "Farm":0, "Mine":0, "Factory":0, "Bank":0, "Temple":0, "WizardTower":0, "Shipment":0};
 const buildingUpgradeNumber = [0,0,0,0,0,0,0,0,0]; //Keeps track of how many upgrades have been unlocked for each building
 const boughtStatus = {"Cursor": false, "Grandma": false, "Farm": false, "Mine": false, "Factory":false, "Bank": false, "Temple": false, "WizardTower": false, "Shipment": false};
 let nextedLockedIndex = 1;
 let numOfCookies = 0;
-let cookiesPerClick = 1;
+let cookiesPerClick = 1000;
 let cookiesPerSecond = 0;
 let cookie = document.getElementById("cookie");
 const goldenCookie = document.getElementById("goldenCookie");
 let inAction = false;
 let goldenCookieClickable = false;
+let clicked = false;
+let buyingMode = true;
 
 
 const targetNumberForUpgrades = [15,25,50];
@@ -151,47 +169,49 @@ This method first calls the building buy function then determines if an upgrade 
 building: the object being passed in
 upgradeList: the list of building specific upgrades
 */
-function buyBuilding(building, upgradeList) {
-    building.buy();
-    let upgradeIndex = 0;
-    while (building.getName() != buildingNameArray[upgradeIndex]) {
-        upgradeIndex++;
-    }
-    //Combine this with buildingArray as an object to make it more efficient
-    if (building.getNumber() == targetNumberForUpgrades[buildingUpgradeNumber[upgradeIndex]]) {
-        currentUpgrade = upgradeList[buildingUpgradeNumber[upgradeIndex]];
-        buildingUpgradeNumber[upgradeIndex] += 1;
-        const subject = document.getElementById("store"); //Creates new HTML element for the building
-        let newElement = '<div id = \"' + currentUpgrade.getID() +'\" class = "upgradebox"><div id = \"'+ currentUpgrade.getID().substring(2)+'\"" class = "upgrade-content" onmouseenter= "document.getElementById(`'+currentUpgrade.getID().substring(2)+'`).style.display = `block`">' + 
+function buyBuilding(building, upgradeList, buyingMode) {
+    if(buyingMode) {
+        building.buy();
+        let upgradeIndex = 0;
+        while (building.getName() != buildingArray[upgradeIndex].getName()) {
+            upgradeIndex++;
+        }
+         //Combine this with buildingArray as an object to make it more efficient
+        if (buildingNameArray[building.getName()] == targetNumberForUpgrades[buildingUpgradeNumber[upgradeIndex]]) {
+            currentUpgrade = upgradeList[buildingUpgradeNumber[upgradeIndex]];
+            buildingUpgradeNumber[upgradeIndex] += 1;
+            const subject = document.getElementById("store"); //Creates new HTML element for the building
+            let newElement = '<div id = \"' + currentUpgrade.getID() +'\" class = "upgradebox"><div id = \"'+ currentUpgrade.getID().substring(2)+'\"" class = "upgrade-content" onmouseenter= "document.getElementById(`'+currentUpgrade.getID().substring(2)+'`).style.display = `block`">' + 
                 '<div><span style = "float:left">' + currentUpgrade.getName() + '</span> <span style = "float:right">' + currentUpgrade.getPrice() + '</span></div><div id = "'+currentUpgrade.getID()+ '"Description">'+ 
                 currentUpgrade.getDescription() + '</div></div></div>';
-        subject.insertAdjacentHTML('beforeend', newElement);
-        const popupContainer = document.getElementById(currentUpgrade.getID());
-        const popupContent = document.getElementById(currentUpgrade.getID().substring(2));
-        let price = currentUpgrade.getPrice();
-        let percentage = currentUpgrade.getPercentage();
-        let ID = currentUpgrade.getID();
-        document.getElementById(ID).style.backgroundImage = "url('"+building.getName()+"upgrade.jpg')";
-        popupContainer.addEventListener('mouseover', function () {popupContent.style.display = 'flex';});
-        popupContainer.addEventListener('mouseout', function () {popupContent.style.display = 'none';});
-        popupContainer.addEventListener("click", function() {
-            if (numOfCookies >= price) {
-            numOfCookies -= price;
-            if(building.getName() == "Cursor") {
-                cookiesPerClick = Math.round(1.15 * cookiesPerClick * 100) / 100;
-                document.getElementById(ID).remove();
-            } else{
-                cookiesPerSecond += Math.round(building.getNumber() * percentage * building.getCps() * 100) / 100;
-                building.setCps(Math.round(building.getCps() * (1 + percentage)* 100)/100);
-                document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(Math.round(cookiesPerSecond * 100)/100) + " cookies per second";
-                document.getElementById(ID).remove();
+            subject.insertAdjacentHTML('beforeend', newElement);
+            const popupContainer = document.getElementById(currentUpgrade.getID());
+            const popupContent = document.getElementById(currentUpgrade.getID().substring(2));
+            let price = currentUpgrade.getPrice();
+            let percentage = currentUpgrade.getPercentage();
+            let ID = currentUpgrade.getID();
+            document.getElementById(ID).style.backgroundImage = "url('"+building.getName()+"upgrade.jpg')";
+            popupContainer.addEventListener('mouseover', function () {popupContent.style.display = 'flex';});
+            popupContainer.addEventListener('mouseout', function () {popupContent.style.display = 'none';});
+            popupContainer.addEventListener("click", function() {
+                if (numOfCookies >= price) {
+                numOfCookies -= price;
+                if(building.getName() == "Cursor") {
+                    cookiesPerClick = Math.round(1.15 * cookiesPerClick * 100) / 100;
+                    document.getElementById(ID).remove();
+                } else{
+                    cookiesPerSecond += Math.round(buildingNameArray[building.getName()] * percentage * building.getCps() * 100) / 100;
+                    building.setCps(Math.round(building.getCps() * (1 + percentage)* 100)/100);
+                    document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(Math.round(cookiesPerSecond * 100)/100) + " cookies per second";
+                    document.getElementById(ID).remove();
+                }
             }
+            }); 
         }
-        }); 
+    } else {
+        building.sell();
     }
 }
-
-
 /*
 This method runs the game and has a timer that runs every second to update the cookie count,
 determine if a golden cookie can spawn, and determines if the next building can appear in the store
@@ -206,22 +226,22 @@ function startGame() {
         numOfCookies = Math.round(numOfCookies);
         numOfCookies /=10;
         let randomNumber = Math.round(Math.random() * 10);
-        if (!goldenCookieClickable && randomNumber == 2) {
+        if ( !clicked && !goldenCookieClickable && randomNumber == 2) {
             spawnGoldenCookie();
         }
         document.getElementById("cookiecounter").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(numOfCookies) + " cookies";
         if (nextedLockedIndex <= buildingArray.length - 1 && numOfCookies  >= .8 * buildingArray[nextedLockedIndex].getPrice()) {
-            document.getElementById(buildingNameArray[nextedLockedIndex]+"box").style.display = "block";
-            document.getElementById(buildingNameArray[nextedLockedIndex]+"Name").innerText = buildingNameArray[nextedLockedIndex];
+            document.getElementById(buildingArray[nextedLockedIndex].getName()+"box").style.display = "block";
+            document.getElementById(buildingArray[nextedLockedIndex].getName()+"Name").innerText = buildingArray[nextedLockedIndex].getName();
             nextedLockedIndex = 1 + nextedLockedIndex;
             if (nextedLockedIndex < buildingArray.length) {
                 rightContent = document.getElementById("Right");
-                let name = buildingNameArray[nextedLockedIndex];
+                let name = buildingArray[nextedLockedIndex].getName();
                 let newBuilding = `<div id = "`+name+`box" class = "box"><div id = "`+name+`" class = "buybox" style = "font-size: 40px;" onclick="buyBuilding(`+ name +
-                              `, `+name+`Upgrades)"><span id = "`+name+`Name">???</span><div class = "buyNumber" id = "`+name+`Num"></div></div><div id = "`+name+`Price" style = "font-size: 30px;"></div></div>`;
+                              `, `+name+`Upgrades, buyingMode)"><span id = "`+name+`Name">???</span><div class = "buyNumber" id = "`+name+`Num"></div></div><div id = "`+name+`Price" style = "font-size: 30px;"></div></div>`;
                 rightContent.insertAdjacentHTML('beforeend', newBuilding);
                 document.getElementById(name + "Price").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(buildingArray[nextedLockedIndex].price) + " cookies";
-                document.getElementById(buildingNameArray[nextedLockedIndex] + "box").style.opacity = .6;
+                document.getElementById(buildingArray[nextedLockedIndex].getName() + "box").style.opacity = .6;
             }
         }
     }
@@ -243,13 +263,12 @@ function spawnGoldenCookie() {
     let goldenTimer = setInterval(unfade, 200);
     function unfade() {
         goldenCookie.style.display = "block";
-        if (Date.now() - start >= 6000 && op >=1) {
+        if (clicked || (Date.now() - start >= 7000 && op >=1)) {
             clearInterval(goldenTimer);
             let timer2 = setInterval(fade, 200);
             op = 1;
             function fade() {
-                console.log("fading");
-                if (op <= .1) {
+                if (clicked || op <= .1) {
                     clearInterval(timer2);
                     goldenCookie.style.display = "none";
                     goldenCookieClickable = false;
@@ -259,7 +278,7 @@ function spawnGoldenCookie() {
             }
         }
         goldenCookie.style.opacity = op;
-        op += 0.1;
+        op += op * 0.1;
     }
 }
 
@@ -294,39 +313,44 @@ function goldenJiggle() {
 A work in progress function that will be called on the click of the golden cookie and determine the special effect
 */
 function goldenCookieEffect() {
+    clicked = true;
+    document.getElementById("goldenCookie").style.display = "none";
     let randomNumber = Math.round(Math.random() * 20);
     let boughtlist = [];
     for (const obj in boughtStatus) {
         if (boughtStatus[obj]) {
             boughtlist.push(obj);
+            console.log(typeof(obj));
         }
     }
+    let msg = ""
+    let originalCPS = cookiesPerSecond;
     if (randomNumber < 10) {
-        //cookie frenzie
+        msg = "Cookie frenzie!! Your cookies per second are multiplied by 7 for the next 30 seconds";
+        cookiesPerSecond *=7;
+        document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(Math.round(cookiesPerSecond * 100)/100) + " cookies per second";
     } else {
-        randomNumber = Math.round(Math.random() * boughtlist.length);
+        randomNumber = Math.round(Math.random() * boughtlist.length - 1);
         let name = boughtlist[randomNumber];
-        switch(name) {
-            case "Cursor":
-                break;
-            case "Grandma":
-                break;
-            case "Farm":
-                break;
-            case "Mine":
-                break;
-            case "Factory":
-                break;
-            case "Bank":
-                break;
-            case "Temple":
-                break;
-            case "WizardTower":
-                break;
-            case "Shipment":
-                break;
-            default:
-                break;
+        msg = name + " Attack: Your " + name + "s are in overdrive and are producing a " + buildingNameArray[name] + "0% increase for 30 seconds";
+        cookiesPerSecond *= 1 + (buildingNameArray[name]/10);
+        document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(Math.round(cookiesPerSecond * 100)/100) + " cookies per second";
+    }
+    document.getElementById("goldenPopup").innerText = msg;
+    document.getElementById("goldenPopup").style.display = "block";
+    let timeNow = Date.now();
+    let alertTimer = setInterval(goldenAlert, 200);
+
+    function goldenAlert() {
+        if (Date.now() - timeNow >= 30000) {
+            clearInterval(alertTimer);
+            cookiesPerSecond = originalCPS;
+            document.getElementById("cps").innerHTML = Intl.NumberFormat("en", {notation: "compact"}).format(Math.round(cookiesPerSecond * 100)/100) + " cookies per second";
+            clicked = false;
+            console.log("resetting cps");
+        }
+        if (Date.now() - timeNow >= 5000) {
+            document.getElementById("goldenPopup").style.display = "none";
         }
     }
 }
@@ -377,7 +401,6 @@ function jiggle() {
     let grow = true;
     let id = setInterval(bounce2, 5);
     function bounce2() {
-        console.log(document.getElementById("cookie").style.backgroundSize + " " + "MAX: " + max);
         if (190 > pixSizeJ || max < 210) {
             clearInterval(id);
         }
